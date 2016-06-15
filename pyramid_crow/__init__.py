@@ -39,7 +39,12 @@ def raven_client(request):
     Uses keys from the pyramid config file beginning with raven. and turns each
     into a kwarg to raven.Client. Also produces http context from request and
     adds to client's context"""
-    kwargs = {}
+    kwargs = {
+        'processors': (
+            'raven.processors.SanitizePasswordsProcessor',
+        ),
+        'timeout': 4,
+    }
 
     for key in request.registry.settings:
         if key.startswith('raven.'):
