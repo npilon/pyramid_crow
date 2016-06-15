@@ -22,7 +22,4 @@ setup(name='pyramid_crow',
           'pyramid>=1.2dev',
           'raven>=5.20.0',
       ],
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
       )
