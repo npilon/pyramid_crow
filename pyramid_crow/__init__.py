@@ -41,10 +41,10 @@ def raven_client(request):
     adds to client's context"""
     kwargs = {}
 
-    for key in request.settings:
+    for key in request.registry.settings:
         if key.startswith('raven.'):
             kwarg = key.partition('.')[2]
-            kwargs[kwarg] = request.settings[key]
+            kwargs[kwarg] = request.registry.settings[key]
 
     client = Client(**kwargs)
     client.http_context(_request_to_http_context(request))
