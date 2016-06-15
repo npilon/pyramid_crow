@@ -28,8 +28,8 @@ def _request_to_http_context(request):
                 request.content_length
             )
         ),
-        'headers': request.headers,
-        'env': request.environ,
+        'headers': dict(request.headers),
+        'env': dict(request.environ),
     }
 
 
