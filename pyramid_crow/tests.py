@@ -30,7 +30,12 @@ class TestIntegration(unittest.TestCase):
         config.add_view(view, name='', renderer='string')
 
         app = self._makeApp()
-        resp = app.get('/')
+
+        with mock.patch.object(pyramid_crow.Client,
+                               'captureException') as mock_capture:
+            resp = app.get('/')
+
+        mock_capture.assert_not_called()
         self.assertEqual(resp.body, b'ok')
 
     def test_capture_called(self):
