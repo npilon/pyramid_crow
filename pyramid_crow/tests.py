@@ -1,6 +1,8 @@
 import unittest
-
-from pyramid import testing
+from pyramid import (
+    testing,
+    httpexceptions,
+)
 from raven.utils import json
 from webtest import TestApp
 import mock
@@ -12,19 +14,23 @@ class ExpectedException(Exception):
     pass
 
 
+class IgnoredException(Exception):
+    pass
+
+
 class TestIntegration(unittest.TestCase):
     def setUp(self):
-        self.config = config = testing.setUp(
+        self.config = testing.setUp(
             settings={
                 'raven.dsn': 'https://foo:bar@example.com/notadsn',
             }
         )
-        config.include('pyramid_crow')
 
     def tearDown(self):
         testing.tearDown()
 
     def _makeApp(self):
+        self.config.include('pyramid_crow')
         app = self.config.make_wsgi_app()
         return TestApp(app)
 
@@ -44,6 +50,44 @@ class TestIntegration(unittest.TestCase):
 
         mock_capture.assert_not_called()
         self.assertEqual(resp.body, b'ok')
+
+    def test_ignored_exception(self):
+        config = self.config
+
+        config.registry.settings['pyramid_crow.ignore'] =\
+            'pyramid_crow.tests.IgnoredException'
+
+        def view(request):
+            raise IgnoredException()
+
+        config.add_view(view, name='', renderer='string')
+
+        app = self._makeApp()
+
+        with mock.patch.object(pyramid_crow.Client,
+                               'captureException') as mock_capture:
+            self.assertRaises(IgnoredException, app.get, '/')
+
+        mock_capture.assert_not_called()
+
+    def test_http_exception(self):
+        config = self.config
+
+        config.registry.settings['pyramid_crow.ignore'] =\
+            'pyramid_crow.tests.IgnoredException'
+
+        def view(request):
+            raise httpexceptions.HTTPFound()
+
+        config.add_view(view, name='', renderer='string')
+
+        app = self._makeApp()
+
+        with mock.patch.object(pyramid_crow.Client,
+                               'captureException') as mock_capture:
+            self.assertRaises(httpexceptions.HTTPFound, app.get, '/')
+
+        mock_capture.assert_not_called()
 
     def test_capture_called(self):
         config = self.config
