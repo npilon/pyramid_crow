@@ -5,6 +5,10 @@ import mock
 import pyramid_crow
 
 
+class ExpectedException(Exception):
+    pass
+
+
 class TestIntegration(unittest.TestCase):
     def setUp(self):
         self.config = config = testing.setUp(
@@ -43,7 +47,7 @@ class TestIntegration(unittest.TestCase):
 
         def view(request):
             self.request = request
-            raise Exception()
+            raise ExpectedException()
 
         config.add_view(view, name='', renderer='string')
 
@@ -51,7 +55,7 @@ class TestIntegration(unittest.TestCase):
 
         with mock.patch.object(pyramid_crow.Client,
                                'captureException') as mock_capture:
-            self.assertRaises(Exception, app.get, '/')
+            self.assertRaises(ExpectedException, app.get, '/')
 
         mock_capture.assert_called_once()
         self.assertEqual(
@@ -76,7 +80,7 @@ class TestIntegration(unittest.TestCase):
 
         def view(request):
             self.request = request
-            raise Exception()
+            raise ExpectedException()
 
         config.add_view(view, name='', renderer='string')
 
@@ -84,7 +88,7 @@ class TestIntegration(unittest.TestCase):
 
         with mock.patch.object(pyramid_crow.Client,
                                'captureException') as mock_capture:
-            self.assertRaises(Exception, app.get, '/',
+            self.assertRaises(ExpectedException, app.get, '/',
                               params=(('foo', 'bar'), ('baz', 'garply')))
 
         mock_capture.assert_called_once()
@@ -111,7 +115,7 @@ class TestIntegration(unittest.TestCase):
 
         def view(request):
             self.request = request
-            raise Exception()
+            raise ExpectedException()
 
         config.add_view(view, name='', renderer='string')
 
@@ -119,7 +123,7 @@ class TestIntegration(unittest.TestCase):
 
         with mock.patch.object(pyramid_crow.Client,
                                'captureException') as mock_capture:
-            self.assertRaises(Exception, app.post, '/',
+            self.assertRaises(ExpectedException, app.post, '/',
                               params=(('foo', 'bar'), ('baz', 'garply')))
 
         mock_capture.assert_called_once()
