@@ -35,7 +35,9 @@ def crow_tween_factory(handler, registry):
 
     get = registry.settings.get
 
-    ignored = get('pyramid_crow.ignore', (WSGIHTTPException,))
+    ignored = get('pyramid_crow.ignore', (,))
+    if WSGIHTTPException not in ignored:
+        ignored = ignored + (WSGIHTTPException,)
 
     def crow_tween(request):
         try:
