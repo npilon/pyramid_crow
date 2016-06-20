@@ -1,13 +1,48 @@
+import sys
+
 from pyramid.tweens import EXCVIEW
+from pyramid.settings import aslist
+from pyramid.settings import asbool
 from pyramid.httpexceptions import WSGIHTTPException
+from pyramid.util import DottedNameResolver
+
 from raven import Client
+
+resolver = DottedNameResolver(None)
+
+PY3 = sys.version_info[0] == 3
+
+if PY3: # pragma: no cover
+    import builtins
+else:
+    import __builtin__ as builtins
+
+def as_globals_list(value):
+    L = []
+    value = aslist(value)
+    for dottedname in value:
+        if dottedname in builtins.__dict__:
+            if PY3: # pragma: no cover
+                dottedname = 'builtins.%s' % dottedname
+            else:
+                dottedname = '__builtin__.%s' % dottedname
+        obj = resolver.resolve(dottedname)
+        L.append(obj)
+    return L
 
 
 def crow_tween_factory(handler, registry):
+
+    get = registry.settings.get
+
+    ignored = get('pyramid_crow.ignore', tuple())
+    if WSGIHTTPException not in ignored:
+        ignored = ignored + (WSGIHTTPException,)
+
     def crow_tween(request):
         try:
             return handler(request)
-        except WSGIHTTPException:
+        except ignored:
             raise
         except:
             request.raven.captureException()
@@ -67,5 +102,10 @@ def raven_client(request):
 
 
 def includeme(config):
+    get = config.registry.settings.get
+    ignored = as_globals_list(get('pyramid_crow.ignore',
+                              'pyramid.httpexceptions.WSGIHTTPException'))
+
+    config.registry.settings['pyramid_crow.ignore'] = tuple(ignored)
     config.add_request_method(raven_client, 'raven', reify=True)
     config.add_tween('pyramid_crow.crow_tween_factory', under=EXCVIEW)
