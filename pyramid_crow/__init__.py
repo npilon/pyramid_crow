@@ -16,18 +16,27 @@ def crow_tween_factory(handler, registry):
     return crow_tween
 
 
+def _filter_request_body(request):
+    """Ensure we don't send an over-long request body to sentry
+
+    65 KB is probably enough for anybody"""
+    if request.content_length is None:
+        # No content_length - pass through whatever we got.
+        return request.body
+    elif request.content_length >= 2 ** 16:
+        return 'Over-long request body of {} bytes omitted'.format(
+            request.content_length
+        )
+    else:
+        return request.body
+
+
 def _request_to_http_context(request):
     return {
         'method': request.method,
         'url': request.path_url,
         'query_string': request.query_string,
-        'data': (
-            request.body
-            if request.content_length < 2**16
-            else 'Over-long request body of {} bytes omitted'.format(
-                request.content_length
-            )
-        ),
+        'data': _filter_request_body(request),
         'headers': dict(request.headers),
         'env': dict(request.environ),
     }
