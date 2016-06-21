@@ -3,8 +3,10 @@ from pyramid import (
     testing,
     httpexceptions,
 )
+from raven.utils import json
 from webtest import TestApp
 import mock
+
 import pyramid_crow
 
 
@@ -192,3 +194,46 @@ class TestIntegration(unittest.TestCase):
                 'Host': 'localhost:80',
             },
         )
+
+    def test_scrub_sensitive_get(self):
+        """Bad form to submit VIA get but let's not leak everywhere"""
+        config = self.config
+
+        def view(request):
+            self.request = request
+            raise ExpectedException()
+
+        config.add_view(view, name='', renderer='string')
+
+        app = self._makeApp()
+
+        with mock.patch.object(pyramid_crow.Client,
+                               'send') as mock_send:
+            self.assertRaises(ExpectedException, app.get, '/',
+                              params=(('password', 'ohno'),))
+
+        sentry_data = mock_send.call_args[1]
+
+        dumped_data = json.dumps(sentry_data)
+        self.assertNotIn('ohno', dumped_data)
+
+    def test_scrub_sensitive_post(self):
+        config = self.config
+
+        def view(request):
+            self.request = request
+            raise ExpectedException()
+
+        config.add_view(view, name='', renderer='string')
+
+        app = self._makeApp()
+
+        with mock.patch.object(pyramid_crow.Client,
+                               'send') as mock_send:
+            self.assertRaises(ExpectedException, app.post, '/',
+                              params=(('password', 'ohno'),))
+
+        sentry_data = mock_send.call_args[1]
+
+        dumped_data = json.dumps(sentry_data)
+        self.assertNotIn('ohno', dumped_data)

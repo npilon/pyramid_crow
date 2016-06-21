@@ -85,7 +85,7 @@ def raven_client(request):
     adds to client's context"""
     kwargs = {
         'processors': (
-            'raven.processors.SanitizePasswordsProcessor',
+            'pyramid_crow.processors.PyramidSanitizePasswordsProcessor',
         ),
         'timeout': 4,
     }
