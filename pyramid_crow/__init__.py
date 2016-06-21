@@ -5,8 +5,15 @@ from pyramid.settings import aslist
 from pyramid.settings import asbool
 from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.util import DottedNameResolver
+from pyramid.events import (
+    NewRequest,
+    subscriber,
+)
 
 from raven import Client
+
+import logging
+logger = logging.getLogger(__name__)
 
 resolver = DottedNameResolver(None)
 
@@ -16,6 +23,9 @@ if PY3: # pragma: no cover
     import builtins
 else:
     import __builtin__ as builtins
+
+CLEAR_CONTEXT_FLAG = "pyramid_crow.clear"
+
 
 def as_globals_list(value):
     L = []
@@ -77,7 +87,16 @@ def _request_to_http_context(request):
     }
 
 
-def raven_client(request):
+def _raven(request):
+    client = request.registry["raven.client"]
+    clear_after = request.environ.get(CLEAR_CONTEXT_FLAG, True)
+    client.http_context(_request_to_http_context(request))
+    if clear_after:
+        request.add_finished_callback(lambda r: r.raven.context.clear())
+    return client
+
+
+def raven_client(registry):
     """Configure a raven client from pyramid config file, add request context
 
     Uses keys from the pyramid config file beginning with raven. and turns each
@@ -90,15 +109,19 @@ def raven_client(request):
         'timeout': 4,
     }
 
-    for key in request.registry.settings:
+    for key in registry.settings:
         if key.startswith('raven.'):
             kwarg = key.partition('.')[2]
-            kwargs[kwarg] = request.registry.settings[key]
+            kwargs[kwarg] = registry.settings[key]
 
     client = Client(**kwargs)
-    client.http_context(_request_to_http_context(request))
-
     return client
+
+
+@subscriber(NewRequest)
+def add_http_context(event):
+    client = event.request.raven
+    client.http_context(_request_to_http_context(event.request))
 
 
 def includeme(config):
@@ -107,5 +130,10 @@ def includeme(config):
                               'pyramid.httpexceptions.WSGIHTTPException'))
 
     config.registry.settings['pyramid_crow.ignore'] = tuple(ignored)
-    config.add_request_method(raven_client, 'raven', reify=True)
+
+    client = raven_client(config.registry)
+    config.registry['raven.client'] = client
+
+    config.add_request_method(_raven, 'raven', reify=True)
     config.add_tween('pyramid_crow.crow_tween_factory', under=EXCVIEW)
+    config.scan()
