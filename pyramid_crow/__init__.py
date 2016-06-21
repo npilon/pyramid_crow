@@ -90,7 +90,6 @@ def _request_to_http_context(request):
 def _raven(request):
     client = request.registry["raven.client"]
     clear_after = request.environ.get(CLEAR_CONTEXT_FLAG, True)
-    client.http_context(_request_to_http_context(request))
     if clear_after:
         request.add_finished_callback(lambda r: r.raven.context.clear())
     return client
