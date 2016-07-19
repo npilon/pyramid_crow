@@ -100,12 +100,12 @@ class TestIntegration(unittest.TestCase):
 
         app = self._makeApp()
 
-        with mock.patch.object(pyramid_crow.Client,
-                               'captureException') as mock_capture:
-            self.assertRaises(ExpectedException, app.get, '/',
-                              extra_environ={
-                                  pyramid_crow.CLEAR_CONTEXT_FLAG: False
-                              })
+        with mock.patch.object(
+            pyramid_crow.Client, 'captureException'
+        ) as mock_capture, mock.patch(
+            'pyramid_crow._raven_clear_context', new=(lambda r: r)
+        ):
+            self.assertRaises(ExpectedException, app.get, '/')
 
         mock_capture.assert_called_once()
         self.assertEqual(
@@ -136,13 +136,14 @@ class TestIntegration(unittest.TestCase):
 
         app = self._makeApp()
 
-        with mock.patch.object(pyramid_crow.Client,
-                               'captureException') as mock_capture:
+        with mock.patch.object(
+            pyramid_crow.Client, 'captureException'
+        ) as mock_capture, mock.patch(
+            'pyramid_crow._raven_clear_context', new=(lambda r: r)
+        ):
             self.assertRaises(ExpectedException, app.get, '/',
-                              params=(('foo', 'bar'), ('baz', 'garply')),
-                              extra_environ={
-                                  pyramid_crow.CLEAR_CONTEXT_FLAG: False
-                              })
+                              params=(('foo', 'bar'), ('baz', 'garply'))
+                              )
 
         mock_capture.assert_called_once()
         self.assertEqual(
@@ -193,13 +194,14 @@ class TestIntegration(unittest.TestCase):
 
         app = self._makeApp()
 
-        with mock.patch.object(pyramid_crow.Client,
-                               'captureException') as mock_capture:
+        with mock.patch.object(
+            pyramid_crow.Client, 'captureException'
+        ) as mock_capture, mock.patch(
+            'pyramid_crow._raven_clear_context', new=(lambda r: r)
+        ):
             self.assertRaises(ExpectedException, app.post, '/',
-                              params=(('foo', 'bar'), ('baz', 'garply')),
-                              extra_environ={
-                                  pyramid_crow.CLEAR_CONTEXT_FLAG: False
-                              })
+                              params=(('foo', 'bar'), ('baz', 'garply'))
+                              )
 
         mock_capture.assert_called_once()
         self.assertEqual(

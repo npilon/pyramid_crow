@@ -24,8 +24,6 @@ if PY3: # pragma: no cover
 else:
     import __builtin__ as builtins
 
-CLEAR_CONTEXT_FLAG = "pyramid_crow.clear"
-
 
 def as_globals_list(value):
     L = []
@@ -87,11 +85,13 @@ def _request_to_http_context(request):
     }
 
 
+def _raven_clear_context(r):
+    r.raven.context.clear()
+
+
 def _raven(request):
     client = request.registry["raven.client"]
-    clear_after = request.environ.get(CLEAR_CONTEXT_FLAG, True)
-    if clear_after:
-        request.add_finished_callback(lambda r: r.raven.context.clear())
+    request.add_finished_callback(_raven_clear_context)
     return client
 
 
