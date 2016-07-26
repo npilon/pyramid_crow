@@ -135,4 +135,4 @@ def includeme(config):
 
     config.add_request_method(_raven, 'raven', reify=True)
     config.add_tween('pyramid_crow.crow_tween_factory', under=EXCVIEW)
-    config.scan()
+    config.scan(ignore='pyramid_crow.tests')
