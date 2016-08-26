@@ -30,7 +30,7 @@ class PyramidSanitizePasswordsProcessor(SanitizePasswordsProcessor):
         """Also descend into env, headers looking for keyval-ish strings"""
         super(PyramidSanitizePasswordsProcessor, self).filter_http(data)
         for n in ('headers', 'env'):
-            if isinstance(data[n], dict):
+            if isinstance(data.get(n), dict):
                 data[n] = varmap(
                     partial(self.vm_sanitize_keyval, delimiter='&'),
                     data[n],
