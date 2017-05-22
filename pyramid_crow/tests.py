@@ -23,7 +23,7 @@ class TestIntegration(unittest.TestCase):
         self.config = testing.setUp(
             settings={
                 'raven.dsn': 'https://foo:bar@example.com/notadsn',
-            }
+            },
         )
 
     def tearDown(self):
@@ -101,24 +101,24 @@ class TestIntegration(unittest.TestCase):
         app = self._makeApp()
 
         with mock.patch.object(
-            pyramid_crow.Client, 'captureException'
+            pyramid_crow.Client, 'captureException',
         ) as mock_capture, mock.patch(
-            'pyramid_crow._raven_clear_context', new=(lambda r: r)
+            'pyramid_crow._raven_clear_context', new=(lambda r: r),
         ):
             self.assertRaises(ExpectedException, app.get, '/')
 
         mock_capture.assert_called_once()
         self.assertEqual(
-            self.request.raven.context['request']['method'], 'GET'
+            self.request.raven.context['request']['method'], 'GET',
         )
         self.assertEqual(
-            self.request.raven.context['request']['url'], 'http://localhost/'
+            self.request.raven.context['request']['url'], 'http://localhost/',
         )
         self.assertEqual(
             self.request.raven.context['request']['data'], b'',
         )
         self.assertEqual(
-            self.request.raven.context['request']['query_string'], ''
+            self.request.raven.context['request']['query_string'], '',
         )
         self.assertEqual(
             self.request.raven.context['request']['headers'],
@@ -137,27 +137,28 @@ class TestIntegration(unittest.TestCase):
         app = self._makeApp()
 
         with mock.patch.object(
-            pyramid_crow.Client, 'captureException'
+            pyramid_crow.Client, 'captureException',
         ) as mock_capture, mock.patch(
-            'pyramid_crow._raven_clear_context', new=(lambda r: r)
+            'pyramid_crow._raven_clear_context', new=(lambda r: r),
         ):
-            self.assertRaises(ExpectedException, app.get, '/',
-                              params=(('foo', 'bar'), ('baz', 'garply'))
-                              )
+            self.assertRaises(
+                ExpectedException, app.get, '/',
+                params=(('foo', 'bar'), ('baz', 'garply')),
+            )
 
         mock_capture.assert_called_once()
         self.assertEqual(
-            self.request.raven.context['request']['method'], 'GET'
+            self.request.raven.context['request']['method'], 'GET',
         )
         self.assertEqual(
-            self.request.raven.context['request']['url'], 'http://localhost/'
+            self.request.raven.context['request']['url'], 'http://localhost/',
         )
         self.assertEqual(
             self.request.raven.context['request']['data'], b'',
         )
         self.assertEqual(
             self.request.raven.context['request']['query_string'],
-            'foo=bar&baz=garply'
+            'foo=bar&baz=garply',
         )
         self.assertEqual(
             self.request.raven.context['request']['headers'],
@@ -195,27 +196,28 @@ class TestIntegration(unittest.TestCase):
         app = self._makeApp()
 
         with mock.patch.object(
-            pyramid_crow.Client, 'captureException'
+            pyramid_crow.Client, 'captureException',
         ) as mock_capture, mock.patch(
-            'pyramid_crow._raven_clear_context', new=(lambda r: r)
+            'pyramid_crow._raven_clear_context', new=(lambda r: r),
         ):
-            self.assertRaises(ExpectedException, app.post, '/',
-                              params=(('foo', 'bar'), ('baz', 'garply'))
-                              )
+            self.assertRaises(
+                ExpectedException, app.post, '/',
+                params=(('foo', 'bar'), ('baz', 'garply')),
+            )
 
         mock_capture.assert_called_once()
         self.assertEqual(
-            self.request.raven.context['request']['method'], 'POST'
+            self.request.raven.context['request']['method'], 'POST',
         )
         self.assertEqual(
-            self.request.raven.context['request']['url'], 'http://localhost/'
+            self.request.raven.context['request']['url'], 'http://localhost/',
         )
         self.assertEqual(
             self.request.raven.context['request']['data'],
             b'foo=bar&baz=garply',
         )
         self.assertEqual(
-            self.request.raven.context['request']['query_string'], ''
+            self.request.raven.context['request']['query_string'], '',
         )
         self.assertEqual(
             self.request.raven.context['request']['headers'],
