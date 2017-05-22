@@ -115,7 +115,7 @@ class TestIntegration(unittest.TestCase):
             self.request.raven.context['request']['url'], 'http://localhost/'
         )
         self.assertEqual(
-            self.request.raven.context['request']['data'], ''
+            self.request.raven.context['request']['data'], b'',
         )
         self.assertEqual(
             self.request.raven.context['request']['query_string'], ''
@@ -153,7 +153,7 @@ class TestIntegration(unittest.TestCase):
             self.request.raven.context['request']['url'], 'http://localhost/'
         )
         self.assertEqual(
-            self.request.raven.context['request']['data'], ''
+            self.request.raven.context['request']['data'], b'',
         )
         self.assertEqual(
             self.request.raven.context['request']['query_string'],
@@ -211,7 +211,8 @@ class TestIntegration(unittest.TestCase):
             self.request.raven.context['request']['url'], 'http://localhost/'
         )
         self.assertEqual(
-            self.request.raven.context['request']['data'], 'foo=bar&baz=garply'
+            self.request.raven.context['request']['data'],
+            b'foo=bar&baz=garply',
         )
         self.assertEqual(
             self.request.raven.context['request']['query_string'], ''

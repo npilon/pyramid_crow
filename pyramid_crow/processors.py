@@ -1,6 +1,9 @@
 from functools import partial
 
-from raven._compat import string_types
+from raven._compat import (
+    string_types,
+    binary_type,
+)
 from raven.processors import SanitizePasswordsProcessor
 from raven.utils import varmap
 
@@ -29,12 +32,16 @@ class PyramidSanitizePasswordsProcessor(SanitizePasswordsProcessor):
     def filter_http(self, data):
         """Also descend into env, headers looking for keyval-ish strings"""
         super(PyramidSanitizePasswordsProcessor, self).filter_http(data)
-        for n in ('headers', 'env'):
+        for n in ('headers', 'env', 'data'):
             if isinstance(data.get(n), dict):
                 data[n] = varmap(
                     partial(self.vm_sanitize_keyval, delimiter='&'),
                     data[n],
                 )
+            elif isinstance(data.get(n), binary_type):
+                data[n] = self.sensitive_repr_filter(
+                    n, data.get(n).decode('utf8')
+                ).encode('utf8')
 
     def vm_sanitize_keyval(self, key, keyval, delimiter):
         """varmap-friendly way to call _sanitize_keyvals
