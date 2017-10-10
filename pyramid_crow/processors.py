@@ -1,9 +1,15 @@
 from functools import partial
 
-from raven._compat import (
-    string_types,
-    binary_type,
-)
+try:
+    from raven.utils.compat import (
+        string_types,
+        binary_type,
+    )
+except ImportError:
+    from raven._compat import (
+        string_types,
+        binary_type,
+    )
 from raven.processors import SanitizePasswordsProcessor
 from raven.utils import varmap
 
