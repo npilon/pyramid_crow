@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.4.1'
+version = '0.4.2'
 
 setup(name='pyramid_crow',
       version=version,
       description="http context compliant automatic raven integration for pyramid",
-      long_description="""\
-""",
+      long_description=open('README.rst').read(),
       classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       keywords='',
       author='Nicholas Pilon',
